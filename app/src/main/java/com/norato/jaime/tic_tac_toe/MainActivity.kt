@@ -1,6 +1,7 @@
 package com.norato.jaime.tic_tac_toe
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -19,8 +20,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private val totalCell=9
     private lateinit var txtResult:TextView
     private val x="X"
+    private val colorX=Color.BLUE
     private val o="O"
+    private val colorO=Color.MAGENTA
     private var btns= arrayOfNulls<Button>(totalCell)
+    private var btnColor=colorX
     private val combinations: Array<IntArray> = arrayOf(
             intArrayOf(0,1,2),
             intArrayOf(3,4,5),
@@ -56,27 +60,79 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.btn8->index=7
             R.id.btn9->index=8
         }
+        playGame(index,button)
+        chechkWinner()
+        update()
     }
-    public fun plaGame(index:Int,button: Button){
+    private fun chechkWinner(){
+        if (cells.isNotEmpty()){
+            for (combination in combinations){
+                var(a,b,c)=combination
+                if (cells[a]!=null && cells[a]==cells[b] && cells[a]==cells[c]){
+                    this.winner=cells[a].toString()
+                }
+            }
+        }
+    }
+    private fun update(){
+        when{
+            winner.isNotEmpty()->{
+                txtResult.text=resources.getString(R.string.winner,if (isX) o else x)
+                txtResult.setTextColor(Color.GREEN)
+            }
+            cells.size==totalCell->{
+                txtResult.text="Empate"
+                txtResult.setTextColor(Color.RED)
+            }
+            else->{
+                if (isX){
+                    txtResult.text=resources.getString(R.string.next_player, x)
+                    txtResult.setTextColor(colorX)
+                }
+                else{
+                    txtResult.text=resources.getString(R.string.next_player, o)
+                    txtResult.setTextColor(colorO)
+                }
+            }
+        }
+    }
+    public fun playGame(index:Int,button: Button){
         if (!winner.isNullOrEmpty()){
             Toast.makeText(this,"Juego finalizado",Toast.LENGTH_LONG).show()
             return
         }
 
         when{
-            isX->cells[index]=x
-            else->cells[index]=o
+            isX->{
+                cells[index]=x
+                btnColor=colorX
+            }
+            else->{
+                cells[index]=o
+                btnColor=colorO
+            }
         }
+        button.setTextColor(btnColor)
         button.text=cells[index]
         button.isEnabled=false
         isX=!isX
     }
-    @SuppressLint("StringFormatInvalid")
+    fun resetButton(){
+        for (i in 1..totalCell){
+            var button=btns[i-1]
+            button?.text=""
+            button?.isEnabled=true
+        }
+    }
     fun newGame(){
         cells= mutableMapOf()
         isX=true
         winner=""
         txtResult.text=resources.getString(R.string.next_player,x)
+        txtResult.setTextColor(colorX)
+        resetButton()
     }
-    fun reset(view: View){}
+    fun reset(view: View){
+        newGame()
+    }
 }
